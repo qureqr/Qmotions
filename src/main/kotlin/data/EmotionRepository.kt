@@ -10,12 +10,36 @@ object EmotionRepository {
     // Приватный словарь, где ключ - название эмоции в нижнем регистре, а значение - объект эмоции.
     private val emotions: Map<String, Emotion> = mapOf(
         "спокойствие" to BasicEmotion.Calmness,
-        "радость" to BasicEmotion.Joy,
-        "грусть" to BasicEmotion.Sadness,
-        "гнев" to BasicEmotion.Anger,
+        "умиротворение" to BasicEmotion.Calmness,
+
         "нейтральность" to BasicEmotion.Neutral,
+
+        "радость" to BasicEmotion.Joy,
+
+        "грусть" to BasicEmotion.Sadness,
+        "печаль" to BasicEmotion.Sadness,
+
+        "гнев" to BasicEmotion.Anger,
+        "злость" to BasicEmotion.Anger,
+
+        "нейтральность" to BasicEmotion.Neutral,
+
+        "страх" to BasicEmotion.Fear,
+        "испуг" to BasicEmotion.Fear,
+
+        "удивление" to BasicEmotion.Surprise,
+
+        "отвращение" to BasicEmotion.Disgust,
+        "омерзение" to BasicEmotion.Disgust,
+
+        "ожидание" to BasicEmotion.Anticipation,
+        "предвкушение" to BasicEmotion.Anticipation,
+
+        "любовь" to ComplexEmotion("Любовь", listOf(BasicEmotion.Joy, BasicEmotion.Trust)),
+        "оптимизм" to ComplexEmotion("Оптимизм", listOf(BasicEmotion.Anticipation, BasicEmotion.Joy)),
         "апатия" to ComplexEmotion("Апатия", listOf(BasicEmotion.Sadness, BasicEmotion.Neutral)),
         "восторг" to ComplexEmotion("Восторг", listOf(BasicEmotion.Joy, BasicEmotion.Joy, BasicEmotion.Calmness))
+
     )
 
     /**
