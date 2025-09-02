@@ -1,4 +1,3 @@
-// Файл: org/qure/ui/Point3D.kt
 package org.qure.ui
 
 import kotlin.math.cos
