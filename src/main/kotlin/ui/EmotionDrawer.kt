@@ -1,9 +1,7 @@
-// Файл: org/qure/ui/EmotionDrawer.kt
 package org.qure.ui
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
@@ -12,6 +10,7 @@ import org.qure.data.Emotions.*
 import kotlin.math.*
 import kotlin.random.Random
 
+// Класс для луча, хранит направление, время рождения и длительность жизни
 data class Ray(val direction: Point3D, val startTime: Float, val duration: Float)
 
 // --- Константы для 3D-фигуры (Икосаэдр) ---
@@ -33,38 +32,46 @@ fun DrawScope.drawEmotion(
     emotion: Emotion,
     time: Float,
     points: List<Point3D>,
-    connections: Map<Point3D, List<Point3D>>
+    connections: Map<Point3D, List<Point3D>>,
+    rays: List<Ray>
 ) {
     when (emotion) {
         is BasicEmotion.Fear -> {
-            val polySides = 8
-            val baseRadius = size.minDimension / 2.5f
-            val compressionValue = 1.0f - (sin(time * 4f) + 1f) / 2f * 0.05f
+            val baseRadius = size.minDimension / 3f
+            val rotationY = time * 0.4f
+            val rotationX = time * 0.25f
 
-            // 1. Получаем анимированные координаты вершин
-            val vertices = getPolygonVertices(center, polySides, baseRadius * compressionValue)
-
-            // 2. Рисуем внутреннюю "паутину"
-            for (i in vertices.indices) {
-                for (j in i + 1 until vertices.size) {
-                    // Эффект свечения для внутренних линий
-                    drawLine(color = emotion.color, start = vertices[i], end = vertices[j], strokeWidth = 3f, alpha = 0.2f, cap = StrokeCap.Round) // ИСПРАВЛЕНО: strokeCap -> cap
-                    drawLine(color = emotion.color, start = vertices[i], end = vertices[j], strokeWidth = 1f, alpha = 0.5f)
-                }
+            // 1. Вращаем и проецируем вершины икосаэдра
+            val projectedVertices = ICO_VERTICES.map {
+                var p = it.copy(x = it.x * baseRadius, y = it.y * baseRadius, z = it.z * baseRadius)
+                p = p.rotateY(rotationY).rotateX(rotationX)
+                center + Offset(p.x, p.y)
             }
 
-            // 3. Рисуем основную рамку многогранника
-            val path = Path().apply {
-                moveTo(vertices.first().x, vertices.first().y)
-                vertices.drop(1).forEach { lineTo(it.x, it.y) }
-                close()
+            // 2. Рисуем "стреляющие" лучи
+            rays.forEach { ray ->
+                val age = time - ray.startTime
+                val lifePercent = (age / ray.duration).coerceIn(0f, 1f)
+
+                val currentLength = baseRadius * 0.95f * lifePercent
+                val endPoint3D = ray.direction.copy(
+                    x = ray.direction.x * currentLength,
+                    y = ray.direction.y * currentLength,
+                    z = ray.direction.z * currentLength
+                ).rotateY(rotationY).rotateX(rotationX)
+
+                val endPoint2D = center + Offset(endPoint3D.x, endPoint3D.y)
+                val alpha = (1f - lifePercent) * 0.8f // Луч исчезает к концу жизни
+
+                drawLine(color = emotion.color, start = center, end = endPoint2D, strokeWidth = 1.5f, alpha = alpha)
             }
-            // Эффект свечения для рамки
-            drawPath(path, color = emotion.color, style = Stroke(width = 8f, cap = StrokeCap.Round), alpha = 0.3f)
-            drawPath(path, color = emotion.color, style = Stroke(width = 3f, cap = StrokeCap.Round), alpha = 1.0f)
+
+            // 3. Рисуем ребра икосаэдра
+            ICO_EDGES.forEach { (i, j) ->
+                drawLine(color = emotion.color, start = projectedVertices[i], end = projectedVertices[j], strokeWidth = 2f, alpha = 0.5f)
+            }
         }
 
-        // --- Остальные эмоции (код без изменений) ---
         is BasicEmotion.Sadness -> {
             val baseRadius = size.minDimension / 3f
             val rotationY = time * 0.5f; val rotationX = time * 0.3f
@@ -114,19 +121,18 @@ fun DrawScope.drawEmotion(
     }
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+// --- Вспомогательные функции ---
 
-// ДОБАВЛЕНА НЕДОСТАЮЩАЯ ФУНКЦИЯ
-private fun getPolygonVertices(center: Offset, sides: Int, radius: Float): List<Offset> {
-    val vertices = mutableListOf<Offset>()
-    val angleStep = (2 * PI / sides).toFloat()
-    for (i in 0 until sides) {
-        val angle = i * angleStep - (PI / 2).toFloat()
-        val x = center.x + radius * cos(angle)
-        val y = center.y + radius * sin(angle)
-        vertices.add(Offset(x, y))
-    }
-    return vertices
+fun randomNormalizedPoint3D(): Point3D {
+    val random = Random
+    val theta = random.nextFloat() * 2 * PI.toFloat()
+    val phi = acos(2 * random.nextFloat() - 1)
+    return Point3D(
+        x = sin(phi) * cos(theta),
+        y = sin(phi) * sin(theta),
+        z = cos(phi),
+        seed = 0f
+    )
 }
 
 private fun createStarPath(center: Offset, points: Int, outerRadius: Float, innerRadius: Float): Path {
@@ -158,15 +164,4 @@ private fun createPolygonPath(center: Offset, sides: Int, radius: Float): Path {
 
 private fun mapValue(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
     return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin
-}
-fun randomNormalizedPoint3D(): Point3D {
-    val random = Random
-    val theta = random.nextFloat() * 2 * PI.toFloat()
-    val phi = acos(2 * random.nextFloat() - 1)
-    return Point3D(
-        x = sin(phi) * cos(theta),
-        y = sin(phi) * sin(theta),
-        z = cos(phi),
-        seed = 0f
-    )
 }
