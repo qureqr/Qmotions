@@ -39,6 +39,14 @@ fun WindowScope.EmotionVisualizerScreen(
     windowState: WindowState,
     onCloseRequest: () -> Unit,
 ) {
+    var time by remember { mutableStateOf(0f) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            withFrameNanos { newTime ->
+                time = newTime / 1_000_000_000f // Переводим наносекунды в секунды
+            }
+        }
+    }
     var uiState by remember { mutableStateOf(EmotionUiState()) }
     val infiniteTransition = rememberInfiniteTransition()
     val pulse by infiniteTransition.animateFloat(
@@ -99,7 +107,7 @@ fun WindowScope.EmotionVisualizerScreen(
                     Text(it, color = MaterialTheme.colors.error)
                 }
                 Canvas(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                    drawEmotion(uiState.currentEmotion, pulse)
+                    drawEmotion(uiState.currentEmotion, time)
                 }
             }
         }
