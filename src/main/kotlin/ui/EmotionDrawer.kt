@@ -9,10 +9,25 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import org.qure.data.Emotions.*
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 import kotlin.random.Random
+
+data class Ray(val direction: Point3D, val startTime: Float, val duration: Float)
+
+// --- Константы для 3D-фигуры (Икосаэдр) ---
+private val ICO_VERTICES = run {
+    val t = (1.0f + sqrt(5.0f)) / 2.0f // Золотое сечение
+    listOf(
+        Point3D(-1f, t, 0f, 0f), Point3D(1f, t, 0f, 0f), Point3D(-1f, -t, 0f, 0f), Point3D(1f, -t, 0f, 0f),
+        Point3D(0f, -1f, t, 0f), Point3D(0f, 1f, t, 0f), Point3D(0f, -1f, -t, 0f), Point3D(0f, 1f, -t, 0f),
+        Point3D(t, 0f, -1f, 0f), Point3D(t, 0f, 1f, 0f), Point3D(-t, 0f, -1f, 0f), Point3D(-t, 0f, 1f, 0f)
+    )
+}
+private val ICO_EDGES = listOf(
+    0 to 1, 0 to 5, 0 to 7, 0 to 10, 0 to 11, 1 to 5, 1 to 7, 1 to 8, 1 to 9, 2 to 3, 2 to 4, 2 to 6, 2 to 10, 2 to 11,
+    3 to 4, 3 to 6, 3 to 8, 3 to 9, 4 to 5, 4 to 9, 4 to 11, 5 to 9, 5 to 11, 6 to 7, 6 to 8, 6 to 10, 7 to 8, 7 to 10,
+    8 to 9, 10 to 11
+)
 
 fun DrawScope.drawEmotion(
     emotion: Emotion,
@@ -143,4 +158,15 @@ private fun createPolygonPath(center: Offset, sides: Int, radius: Float): Path {
 
 private fun mapValue(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
     return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin
+}
+fun randomNormalizedPoint3D(): Point3D {
+    val random = Random
+    val theta = random.nextFloat() * 2 * PI.toFloat()
+    val phi = acos(2 * random.nextFloat() - 1)
+    return Point3D(
+        x = sin(phi) * cos(theta),
+        y = sin(phi) * sin(theta),
+        z = cos(phi),
+        seed = 0f
+    )
 }
