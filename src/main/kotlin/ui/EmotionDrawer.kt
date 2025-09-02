@@ -1,65 +1,71 @@
-// Файл: org/qure/ui/EmotionDrawer.kt
 package org.qure.ui
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import org.qure.data.Emotions.*
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
-// ИЗМЕНЕНО: Параметр теперь `time`, а не `animationValue` для единообразия.
-fun DrawScope.drawEmotion(emotion: Emotion, time: Float) {
+fun DrawScope.drawEmotion(
+    emotion: Emotion,
+    time: Float,
+    points: List<Point3D>,
+    connections: Map<Point3D, List<Point3D>>
+) {
     when (emotion) {
-        is BasicEmotion.Joy -> {
-            // ИСПРАВЛЕНО: Добавлена логика пульсации на основе `time`, как мы делали для Страха.
-            val pulseValue = 1.0f + (sin(time * 5f) + 1f) / 2f * 0.1f
+        is BasicEmotion.Sadness -> {
+            val baseRadius = size.minDimension / 3f
+            val rotationY = time * 0.5f
+            val rotationX = time * 0.3f
 
+            val animatedPoints = points.map { point ->
+                val pulse = sin(time * 1.5f + point.seed) * 15f
+                val animatedRadius = baseRadius + pulse
+
+                var p = point.copy(
+                    x = point.x * animatedRadius,
+                    y = point.y * animatedRadius,
+                    z = point.z * animatedRadius
+                )
+                p = p.rotateY(rotationY)
+                p = p.rotateX(rotationX)
+                p
+            }
+
+            val animatedPointsMap = points.zip(animatedPoints).toMap()
+
+            connections.forEach { (startPoint, neighbors) ->
+                val animatedStart = animatedPointsMap[startPoint]!!
+                neighbors.forEach { endPoint ->
+                    val animatedEnd = animatedPointsMap[endPoint]!!
+                    val start2D = center + Offset(animatedStart.x, animatedStart.y)
+                    val end2D = center + Offset(animatedEnd.x, animatedEnd.y)
+                    val alpha = mapValue((animatedStart.z + animatedEnd.z) / 2f, -baseRadius, baseRadius, 0.1f, 0.8f)
+
+                    drawLine(
+                        color = emotion.color,
+                        start = start2D,
+                        end = end2D,
+                        strokeWidth = 1.5f,
+                        alpha = alpha.coerceIn(0f, 1f)
+                    )
+                }
+            }
+        }
+
+        is BasicEmotion.Joy -> {
+            val pulseValue = 1.0f + (sin(time * 5f) + 1f) / 2f * 0.1f
             withTransform({ scale(scale = pulseValue, pivot = center) }) {
                 drawPath(createStarPath(center, 5, size.minDimension / 4f, size.minDimension / 8f), color = emotion.color)
             }
         }
-        is BasicEmotion.Sadness -> {
-            // РАБОТАЕТ: Этот код уже правильно использует `time`.
-            val baseRadius = size.minDimension / 3f
-            val numLines = 20
-
-            for (i in 0..numLines) {
-                val path = Path()
-                val lat = mapValue(i.toFloat(), 0f, numLines.toFloat(), -90f, 90f)
-                val r = baseRadius * cos(Math.toRadians(lat.toDouble())).toFloat()
-                val y = center.y + baseRadius * sin(Math.toRadians(lat.toDouble())).toFloat()
-
-                if (r < 1f) continue
-
-                for (angleDeg in 0..360 step 5) {
-                    val angleRad = Math.toRadians(angleDeg.toDouble()).toFloat()
-                    val distortion = sin(time * 2f + angleRad * 5f) * 10f
-                    val distortedRadius = r + distortion
-                    val x = center.x + distortedRadius * cos(angleRad)
-
-                    if (angleDeg == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        path.lineTo(x, y)
-                    }
-                }
-                path.close()
-
-                drawPath(
-                    path,
-                    color = emotion.color,
-                    style = Stroke(width = 1.5f),
-                    alpha = 0.5f
-                )
-            }
-        }
-
         is BasicEmotion.Anger -> {
             repeat(20) {
                 val angle = Random.nextFloat() * 2 * Math.PI
@@ -70,11 +76,9 @@ fun DrawScope.drawEmotion(emotion: Emotion, time: Float) {
             }
         }
         is BasicEmotion.Fear -> {
-            // РАБОТАЕТ: Этот код уже правильно использует `time`.
             val compressionValue = 1.0f - (sin(time * 5f) + 1f) / 2f * 0.1f
             val polySides = 6
             val baseRadius = size.minDimension / 3f
-
             withTransform({ scale(scale = compressionValue, pivot = center) }) {
                 drawPath(createPolygonPath(center, polySides, baseRadius), color = emotion.color, style = Stroke(width = 5f))
                 repeat(20) {
@@ -100,8 +104,7 @@ fun DrawScope.drawEmotion(emotion: Emotion, time: Float) {
     }
 }
 
-// --- Вспомогательные функции (без изменений) ---
-
+// Вспомогательные функции для рисования 2D фигур
 private fun createStarPath(center: Offset, points: Int, outerRadius: Float, innerRadius: Float): Path {
     val path = Path()
     val angleStep = (2 * Math.PI) / (points * 2)
