@@ -37,7 +37,7 @@ fun DrawScope.drawEmotion(
 ) {
     when (emotion) {
         is BasicEmotion.Fear -> {
-            val baseRadius = size.minDimension / 3f
+            val baseRadius = size.minDimension / 3.8f
             val rotationY = time * 0.4f
             val rotationX = time * 0.25f
 
@@ -53,7 +53,7 @@ fun DrawScope.drawEmotion(
                 val age = time - ray.startTime
                 val lifePercent = (age / ray.duration).coerceIn(0f, 1f)
 
-                val currentLength = baseRadius * 0.95f * lifePercent
+                val currentLength = baseRadius * 1.55f * lifePercent
                 val endPoint3D = ray.direction.copy(
                     x = ray.direction.x * currentLength,
                     y = ray.direction.y * currentLength,

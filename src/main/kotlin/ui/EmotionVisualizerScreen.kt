@@ -18,6 +18,10 @@ import androidx.compose.ui.window.WindowState
 import org.qure.data.EmotionRepository
 import org.qure.data.Emotions.BasicEmotion
 import org.qure.data.Emotions.Emotion
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
+import androidx.compose.material.Typography
+import androidx.compose.ui.text.platform.Font
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -28,16 +32,51 @@ fun WindowScope.EmotionVisualizerScreen(
     windowState: WindowState,
     onCloseRequest: () -> Unit,
 ) {
+    val pixelFamily = FontFamily(Font("font/PixelifySans-VariableFont_wght.ttf"))
+
+    val hackerTypography = Typography(
+        defaultFontFamily = pixelFamily
+    )
+
+    val hackerColors = darkColors(
+        primary = Color(0xFF00FFFF),      // Бирюзовый для акцентов (кнопки)
+        background = Color(0xFF0D0D1A),  // Глубокий тёмно-синий фон
+        surface = Color(0xFF1A1A1A),     // Поверхности (поле ввода)
+        onPrimary = Color.Black,          // Текст на кнопках
+        onBackground = Color(0xFF00FFFF), // Основной текст на фоне
+        onSurface = Color(0xFF00FFFF)     // Текст на поверхностях
+    )
+
     var time by remember { mutableStateOf(0f) }
+    var uiState by remember { mutableStateOf(EmotionUiState()) }
+
+    // Состояние для хранения "живых" лучей для эмоции "Страх"
+    var rays by remember { mutableStateOf<List<Ray>>(emptyList()) }
+
+    // Эффект, который постоянно обновляет время и управляет лучами
     LaunchedEffect(Unit) {
+        var frameCount = 0
         while (true) {
             withFrameNanos { newTime ->
                 time = newTime / 1_000_000_000f
+                frameCount++
+
+                // Каждые 5 кадров (можно менять для частоты) создаем новый луч и удаляем старые
+                if (frameCount % 2 == 0) {
+                    val newRay = Ray(
+                        direction = randomNormalizedPoint3D(), // Случайное направление
+                        startTime = time,
+                        duration = 1.2f // Луч живет полсекунды
+                    )
+                    // Оставляем только "живые" лучи и добавляем новый
+                    val updatedRays = rays.filter { ray -> time - ray.startTime < ray.duration }
+                    rays = updatedRays + newRay
+                }
             }
         }
     }
-    var uiState by remember { mutableStateOf(EmotionUiState()) }
 
+    // Данные для эмоции "Грусть"
     val points = remember {
         val numPoints = 150
         val random = Random(0)
@@ -70,7 +109,10 @@ fun WindowScope.EmotionVisualizerScreen(
         }
     }
 
-    MaterialTheme {
+    MaterialTheme(
+        colors = hackerColors,
+        typography = hackerTypography
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             WindowDraggableArea {
                 TopAppBar(
@@ -116,7 +158,8 @@ fun WindowScope.EmotionVisualizerScreen(
                         emotion = uiState.currentEmotion,
                         time = time,
                         points = points,
-                        connections = connections
+                        connections = connections,
+                        rays = rays // Передаем лучи
                     )
                 }
             }
