@@ -3,6 +3,7 @@ package org.qure.ui.visualizations
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.qure.ui.shared.Point3D
 import org.qure.ui.shared.Ray
+import org.qure.ui.shared.VisualizationConfig
 
 /**
  * Интерфейс ("контракт") для всех визуализаторов эмоций.
@@ -15,6 +16,7 @@ interface EmotionVisualizer {
         time: Float,
         points: List<Point3D>,
         connections: Map<Point3D, List<Point3D>>,
-        rays: List<Ray>
+        rays: List<Ray>,
+        config: VisualizationConfig // <-- Добавлен config
     )
 }

@@ -11,7 +11,8 @@ class SadnessVisualizer : EmotionVisualizer {
         time: Float,
         points: List<Point3D>,
         connections: Map<Point3D, List<Point3D>>,
-        rays: List<Ray>
+        rays: List<Ray>,
+        config: VisualizationConfig
     ) {
         // --- Логика отрисовки "мнущейся" сферы ---
         val baseRadius = size.minDimension / 3f

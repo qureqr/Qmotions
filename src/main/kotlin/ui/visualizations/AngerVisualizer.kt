@@ -74,33 +74,33 @@ private fun generateIcosphere(subdivisions: Int): Pair<List<Point3D>, List<IntAr
 
 
 class AngerVisualizer : EmotionVisualizer {
+    // Обновляем сигнатуру функции, чтобы она принимала config
     override fun DrawScope.draw(
         time: Float,
         points: List<Point3D>,
         connections: Map<Point3D, List<Point3D>>,
-        rays: List<Ray>
+        rays: List<Ray>,
+        config: VisualizationConfig
     ) {
-        val baseRadius = size.minDimension / 4f
+        // --- Используем config для расчета размера ---
+        val baseRadius = (size.minDimension / 2f) * config.baseScale
+
+        // --- Остальная логика отрисовки (без изменений) ---
         val rotationY = time * 0.3f
         val rotationX = time * 0.2f
-
         val pulseSpeed = 8f; val pulsePower = 8f
         val pulse = abs(sin(time * pulseSpeed)).pow(pulsePower) * 0.2f + 1.0f
         val currentRadius = baseRadius * pulse
         val jitterAmount = (pulse - 1.0f) * 5f
-
         val projectedVertices = HONEYCOMB_VERTICES.map {
             val jitterX = (Random.nextFloat() - 0.5f) * jitterAmount
             val jitterY = (Random.nextFloat() - 0.5f) * jitterAmount
-
             var p = it.copy(x = it.x * currentRadius, y = it.y * currentRadius, z = it.z * currentRadius)
             p = p.rotateY(rotationY).rotateX(rotationX)
             center + Offset(p.x + jitterX, p.y + jitterY)
         }
-
         val strokeWidth = 2.5f + (pulse - 1.0f) * 5f
         val color = Anger.color.copy(red = 0.7f + (pulse - 1.0f) * 1.5f)
-
         HONEYCOMB_EDGES.forEach { (i, j) ->
             if (i < projectedVertices.size && j < projectedVertices.size) {
                 drawLine(color = color, start = projectedVertices[i], end = projectedVertices[j], strokeWidth = strokeWidth)

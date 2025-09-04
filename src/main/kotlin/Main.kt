@@ -4,6 +4,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.qure.ui.screen.EmotionVisualizerScreen
+import org.qure.ui.theme.QmotionsTheme
 
 fun main() = application {
     val windowState = rememberWindowState()
@@ -14,9 +15,11 @@ fun main() = application {
         undecorated = true,
         transparent = false
     ){
-        EmotionVisualizerScreen(
-            windowState = windowState,
-            onCloseRequest = ::exitApplication,
-        )
+        QmotionsTheme {
+            EmotionVisualizerScreen(
+                windowState = windowState,
+                onCloseRequest = ::exitApplication
+            )
+        }
     }
 }

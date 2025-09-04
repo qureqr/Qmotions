@@ -5,19 +5,17 @@ import androidx.compose.material.darkColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// 1. Собираем палитру из наших новых цветов
 private val DarkColorPalette = darkColors(
-    primary = VibrantCyan,       // Яркий акцент для кнопок и рамок
-    background = DeepNightBlue,    // Наш новый фон
-    surface = GraphiteSurface,   // Наша новая поверхность
+    primary = AccentColor,      // Основной акцентный цвет
+    background = BackgroundColor,   // Цвет фона
+    surface = SurfaceColor,     // Цвет поверхностей
 
-    onPrimary = DarkSurface,           // Текст на кнопках (темный)
-    onBackground = SubtleCyan,         // Основной текст на фоне (приглушенный)
-    onSurface = SubtleCyan,          // Текст на поверхностях (приглушенный)
-    error = WarningYellow          // Цвет для ошибок
+    onPrimary = Color.Black,        // Текст на акцентных элементах
+    onBackground = PrimaryTextColor,  // Текст на фоне
+    onSurface = PrimaryTextColor,   // Текст на поверхностях
+    error = ErrorColor
 )
 
-// 2. Наш главный Composable-компонент темы (без изменений)
 @Composable
 fun QmotionsTheme(content: @Composable () -> Unit) {
     MaterialTheme(

@@ -19,7 +19,6 @@ import org.qure.data.Emotion
 import org.qure.data.EmotionRepository
 import org.qure.ui.renderEmotion
 import org.qure.ui.shared.*
-import org.qure.ui.theme.QmotionsTheme
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -30,6 +29,10 @@ fun WindowScope.EmotionVisualizerScreen(
     windowState: WindowState,
     onCloseRequest: () -> Unit,
 ) {
+    // --- Создаем "пульт управления" ---
+    val visualizationConfig = remember { VisualizationConfig(baseScale = 0.7f) }
+
+    // --- Остальная логика состояния (без изменений) ---
     var time by remember { mutableStateOf(0f) }
     var uiState by remember { mutableStateOf(EmotionUiState()) }
     var rays by remember { mutableStateOf<List<Ray>>(emptyList()) }
@@ -41,18 +44,13 @@ fun WindowScope.EmotionVisualizerScreen(
                 time = newTime / 1_000_000_000f
                 frameCount++
                 if (frameCount % 2 == 0) {
-                    val newRay = Ray(
-                        direction = randomNormalizedPoint3D(),
-                        startTime = time,
-                        duration = 1.2f
-                    )
+                    val newRay = Ray(direction = randomNormalizedPoint3D(), startTime = time, duration = 1.2f)
                     val updatedRays = rays.filter { ray -> time - ray.startTime < ray.duration }
                     rays = updatedRays + newRay
                 }
             }
         }
     }
-
     val points = remember {
         val numPoints = 150; val random = Random(0)
         List(numPoints) {
@@ -67,7 +65,6 @@ fun WindowScope.EmotionVisualizerScreen(
             points.filter { it != point }.sortedBy { neighbor -> point.distanceTo(neighbor) }.take(numNeighbors)
         }
     }
-
     val onVisualizeClick = {
         val foundEmotion = EmotionRepository.findEmotion(uiState.userInput)
         uiState = if (foundEmotion != null) {
@@ -77,21 +74,16 @@ fun WindowScope.EmotionVisualizerScreen(
         }
     }
 
-    QmotionsTheme {
+    // --- UI НАЧИНАЕТСЯ СРАЗУ С Surface, БЕЗ QmotionsTheme ---
+    Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
-            GlitchBackground()
-
             Column(modifier = Modifier.fillMaxSize()) {
                 WindowDraggableArea {
                     TopAppBar(
                         title = { Text("Emotion Visualizer") },
                         actions = {
-                            IconButton(onClick = { windowState.isMinimized = true }) {
-                                Icon(Icons.Default.Remove, contentDescription = "Minimize")
-                            }
-                            IconButton(onClick = onCloseRequest) {
-                                Icon(Icons.Default.Close, contentDescription = "Close")
-                            }
+                            IconButton(onClick = { windowState.isMinimized = true }) { Icon(Icons.Default.Remove, contentDescription = "Minimize") }
+                            IconButton(onClick = onCloseRequest) { Icon(Icons.Default.Close, contentDescription = "Close") }
                         }
                     )
                 }
@@ -112,24 +104,19 @@ fun WindowScope.EmotionVisualizerScreen(
                             singleLine = true
                         )
                         Spacer(Modifier.width(8.dp))
-                        Button(onClick = onVisualizeClick) {
-                            Text("Визуализировать")
-                        }
+                        Button(onClick = onVisualizeClick) { Text("Визуализировать") }
                     }
-                    uiState.errorMessage?.let {
-                        Text(it, color = MaterialTheme.colors.error)
-                    }
+                    uiState.errorMessage?.let { Text(it, color = MaterialTheme.colors.error) }
                     Canvas(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        // --- ИСПРАВЛЕНИЕ ОШИБКИ Type Mismatch ---
-                        // Сохраняем эмоцию в переменную и проверяем, что она не null
                         val currentEmotion = uiState.currentEmotion
                         if (currentEmotion != null) {
                             renderEmotion(
-                                emotion = currentEmotion, // Передаем non-null эмоцию
+                                emotion = currentEmotion,
                                 time = time,
                                 points = points,
                                 connections = connections,
-                                rays = rays
+                                rays = rays,
+                                config = visualizationConfig
                             )
                         }
                     }
@@ -141,6 +128,6 @@ fun WindowScope.EmotionVisualizerScreen(
 
 private data class EmotionUiState(
     val userInput: String = "",
-    val currentEmotion: Emotion? = null, // Эмоция может быть null при старте
+    val currentEmotion: Emotion? = null,
     val errorMessage: String? = null
 )

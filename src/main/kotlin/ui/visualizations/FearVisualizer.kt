@@ -3,10 +3,7 @@ package org.qure.ui.visualizations
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import org.qure.ui.shared.Point3D
-import org.qure.ui.shared.Ray
-import org.qure.ui.shared.rotateX
-import org.qure.ui.shared.rotateY
+import org.qure.ui.shared.*
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -33,8 +30,9 @@ class FearVisualizer : EmotionVisualizer {
         time: Float,
         points: List<Point3D>,
         connections: Map<Point3D, List<Point3D>>,
-        rays: List<Ray>
-    ) {
+        rays: List<Ray>,
+        config: VisualizationConfig
+    )  {
         // 3. Вставляем сюда ВСЮ логику отрисовки для Страха
         val baseRadius = size.minDimension / 3.5f
         val rotationY = time * 0.4f
