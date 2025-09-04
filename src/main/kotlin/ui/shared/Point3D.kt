@@ -46,3 +46,6 @@ fun randomNormalizedPoint3D(): Point3D {
         seed = 0f // Семя здесь не важно, так как это просто вектор направления
     )
 }
+fun mapValue(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
+    return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin
+}

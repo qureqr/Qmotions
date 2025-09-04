@@ -3,6 +3,8 @@ package org.qure.data
 import androidx.compose.ui.graphics.Color
 import org.qure.ui.visualizations.EmotionVisualizer
 import org.qure.ui.visualizations.FearVisualizer
+import org.qure.ui.visualizations.SadnessVisualizer
+import org.qure.ui.visualizations.AngerVisualizer
 
 /**
  * Базовый интерфейс для всех эмоций.
@@ -26,8 +28,17 @@ object Fear : Emotion {
 /**
  * Определение эмоции "Грусть".
  */
-/**object Sadness : Emotion {
+object Sadness : Emotion {
     override val name: String = "Грусть"
     override val color: Color = Color(0xFF6495ED) // Васильковый
     override val visualizer: EmotionVisualizer = SadnessVisualizer()
-}*/
+}
+
+/**
+ * Определение эмоции "Гнев".
+ **/
+object Anger : Emotion {
+    override val name: String = "Гнев"
+    override val color: Color = Color(0xFFB30000) // Глубокий красный
+    override val visualizer: EmotionVisualizer = AngerVisualizer()
+}
