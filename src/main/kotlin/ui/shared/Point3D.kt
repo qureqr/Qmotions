@@ -1,4 +1,4 @@
-package org.qure.ui
+package org.qure.ui.shared
 
 import kotlin.math.cos
 import kotlin.math.pow

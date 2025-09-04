@@ -3,10 +3,12 @@ package org.qure.ui
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import org.qure.data.Emotions.*
+import org.qure.ui.shared.Point3D
+import org.qure.ui.shared.rotateX
+import org.qure.ui.shared.rotateY
 import kotlin.math.*
 import kotlin.random.Random
 

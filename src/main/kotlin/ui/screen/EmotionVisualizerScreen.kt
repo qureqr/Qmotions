@@ -1,4 +1,4 @@
-package org.qure.ui
+package org.qure.ui.screen
 
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.foundation.Canvas
@@ -19,9 +19,13 @@ import org.qure.data.EmotionRepository
 import org.qure.data.Emotions.BasicEmotion
 import org.qure.data.Emotions.Emotion
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.Font
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.platform.Font
+import org.qure.ui.Ray
+import org.qure.ui.drawEmotion
+import org.qure.ui.randomNormalizedPoint3D
+import org.qure.ui.shared.Point3D
+import org.qure.ui.shared.distanceTo
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
