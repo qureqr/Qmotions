@@ -1,5 +1,5 @@
 package org.qure.ui.visualizations
-
+// NEUROCODE(НЕ БЕЙТЕ Я НЕ ЕБУ В МАТЕМАТИКУ)
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.qure.data.Sadness // Импортируем объект Sadness для доступа к его цвету
